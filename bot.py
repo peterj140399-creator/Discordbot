@@ -1,9 +1,9 @@
 import os
 import discord
 
-# Configuración del token y webhook desde Environment
+# Cargar token y webhook ID desde environment variables
 TOKEN = os.environ.get("DISCORD_TOKEN")
-WEBHOOK_ID = int(os.environ.get("WEBHOOK_ID"))  # Asegúrate de poner la ID numérica
+WEBHOOK_ID = int(os.environ.get("WEBHOOK_ID"))  # Asegúrate de poner la ID numérica en Environment
 
 # Intents necesarios
 intents = discord.Intents.default()
@@ -14,7 +14,7 @@ client = discord.Client(intents=intents)
 
 @client.event
 async def on_ready():
-    print(f'Logged in as {client.user}')
+    print(f"[INFO] Bot conectado como {client.user}")
 
 @client.event
 async def on_message(message):
@@ -22,12 +22,17 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    # Mostrar todos los mensajes recibidos
-    print(f"Mensaje recibido: author={message.author}, webhook_id={message.webhook_id}, content={message.content}")
-
-    # Solo responder si el mensaje viene del webhook correcto
+    # Solo responder a mensajes del webhook correcto
     if message.webhook_id == WEBHOOK_ID:
-        nick = message.author.name or "desconocido"
+        lines = message.content.splitlines()
+        nick = "desconocido"
+
+        # Buscar la línea que sigue a "Nick en el servidor"
+        for i, line in enumerate(lines):
+            if line.strip().lower() == "nick en el servidor" and i + 1 < len(lines):
+                nick = lines[i + 1].strip()
+                break
+
         thread_name = f"Sugerencia de {nick}"
         try:
             await message.channel.create_thread(
@@ -35,9 +40,8 @@ async def on_message(message):
                 message=message,
                 type=discord.ChannelType.public_thread
             )
-            print(f"Hilo '{thread_name}' creado.")
+            print(f"[INFO] Hilo '{thread_name}' creado.")
         except Exception as e:
-            print(f"Error creando hilo: {e}")
+            print(f"[ERROR] Error creando hilo: {e}")
 
-# Ejecutar el bot
 client.run(TOKEN)
