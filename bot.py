@@ -1,9 +1,11 @@
 import os
 import discord
+from dotenv import load_dotenv
 
-# Cargar token y webhook ID desde environment variables
-TOKEN = os.environ.get("DISCORD_TOKEN")
-WEBHOOK_ID = int(os.environ.get("WEBHOOK_ID"))  # Asegúrate de poner la ID numérica en Environment
+# Cargar token desde environment
+load_dotenv()
+TOKEN = os.getenv("DISCORD_TOKEN")
+WEBHOOK_ID = int(os.getenv("WEBHOOK_ID"))  # ID numérica del webhook
 
 # Intents necesarios
 intents = discord.Intents.default()
@@ -14,7 +16,7 @@ client = discord.Client(intents=intents)
 
 @client.event
 async def on_ready():
-    print(f"[INFO] Bot conectado como {client.user}")
+    print(f'Logged in as {client.user}')
 
 @client.event
 async def on_message(message):
@@ -22,26 +24,31 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    # Solo responder a mensajes del webhook correcto
-    if message.webhook_id == WEBHOOK_ID:
-        lines = message.content.splitlines()
-        nick = "desconocido"
+    # Solo procesar mensajes de nuestro webhook
+    if message.webhook_id != WEBHOOK_ID:
+        return
 
-        # Buscar la línea que sigue a "Nick en el servidor"
+    # Intentar extraer el nick desde el contenido
+    nick = "desconocido"
+    try:
+        lines = [line.strip() for line in message.content.splitlines() if line.strip()]
         for i, line in enumerate(lines):
-            if line.strip().lower() == "nick en el servidor" and i + 1 < len(lines):
-                nick = lines[i + 1].strip()
+            if line.lower() == "nick en el servidor" and i+1 < len(lines):
+                nick = lines[i+1]
                 break
+    except Exception as e:
+        print(f"Error al extraer nick: {e}")
 
-        thread_name = f"Sugerencia de {nick}"
-        try:
-            await message.channel.create_thread(
-                name=thread_name,
-                message=message,
-                type=discord.ChannelType.public_thread
-            )
-            print(f"[INFO] Hilo '{thread_name}' creado.")
-        except Exception as e:
-            print(f"[ERROR] Error creando hilo: {e}")
+    # Crear hilo
+    thread_name = f"Sugerencia de {nick}"
+    try:
+        await message.channel.create_thread(
+            name=thread_name,
+            message=message,
+            type=discord.ChannelType.public_thread
+        )
+        print(f"Hilo '{thread_name}' creado.")
+    except Exception as e:
+        print(f"Error creando hilo: {e}")
 
 client.run(TOKEN)
