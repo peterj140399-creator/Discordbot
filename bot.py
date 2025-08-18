@@ -24,11 +24,10 @@ async def on_message(message):
 
     if message.webhook_id == WEBHOOK_ID:
         # Extraer nombre desde el contenido del mensaje
-        lines = message.content.splitlines()
-        nombre = "desconocido"  # valor por defecto
-        for line in lines:
-            if line.lower().startswith("nombre:"):
-                nombre = line.split(":", 1)[1].strip()
+        nick = "desconocido"
+        for line in message.content.split("\n"):
+            if line.startswith("Nick en el servidor:"):
+                nick = line.replace("Nick en el servidor:", "").strip()
                 break
 
         thread_name = f"Sugerencia de {nombre}"
@@ -44,5 +43,6 @@ async def on_message(message):
             print(f"Error creando hilo: {e}")
 
 client.run(TOKEN)
+
 
 
