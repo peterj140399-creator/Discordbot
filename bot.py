@@ -2,10 +2,10 @@ import os
 import discord
 from dotenv import load_dotenv
 
-# Cargar token desde environment
+# Cargar variables de entorno
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
-WEBHOOK_ID = int(os.getenv("WEBHOOK_ID"))  # Asegúrate de que esté en environment
+WEBHOOK_ID = int(os.getenv("WEBHOOK_ID"))  # ID numérica del webhook
 
 # Intents necesarios
 intents = discord.Intents.default()
@@ -24,32 +24,27 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    # Solo procesar mensajes del webhook específico
-    if message.webhook_id == WEBHOOK_ID:
-        nick = "desconocido"
+    # Solo responder a mensajes del webhook
+    if message.webhook_id != WEBHOOK_ID:
+        return
 
-        # Revisar embeds
-        if message.embeds:
-            embed = message.embeds[0]
-            if embed.description:
-                lines = embed.description.splitlines()
-                try:
-                    # Buscar la línea "Nick en el servidor" y tomar la siguiente como nick
-                    index = lines.index("Nick en el servidor")
-                    nick = lines[index + 1].strip()
-                except (ValueError, IndexError):
-                    pass
+    # Determinar tipo de hilo según contenido del mensaje
+    content = message.content
+    if "¿Qué sugerencia tienes para nosotros?" in content:
+        thread_name = "Sugerencia"
+    elif "¿Sobre quién quieres hablarnos?" in content:
+        thread_name = "Reporte"
+    else:
+        thread_name = "General"
 
-        thread_name = f"Sugerencia de {nick}"
-
-        try:
-            await message.channel.create_thread(
-                name=thread_name,
-                message=message,
-                type=discord.ChannelType.public_thread
-            )
-            print(f"Hilo '{thread_name}' creado.")
-        except Exception as e:
-            print(f"Error creando hilo: {e}")
+    try:
+        await message.channel.create_thread(
+            name=thread_name,
+            message=message,
+            type=discord.ChannelType.public_thread
+        )
+        print(f"Hilo '{thread_name}' creado.")
+    except Exception as e:
+        print(f"Error creando hilo: {e}")
 
 client.run(TOKEN)
