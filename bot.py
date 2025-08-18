@@ -1,34 +1,45 @@
 import os
 import discord
+from discord.ext import commands
 
+# Intents mínimos necesarios
 intents = discord.Intents.default()
-intents.messages = True
+intents.message_content = True
 
-TOKEN = os.environ.get("DISCORD_TOKEN")
-WEBHOOK_ID = int(os.environ.get("WEBHOOK_ID"))
+bot = commands.Bot(command_prefix="!", intents=intents)
 
-client = discord.Client(intents=intents)
+# IDs de los webhooks (poner los valores numéricos en Environment)
+WEBHOOK_IDS = {
+    "sugerencia": int(os.environ.get("WEBHOOK_ID")),       # webhook sugerencias
+    "reporte": int(os.environ.get("WEBHOOK_ID_REPORTE"))  # webhook reportes
+}
 
-@client.event
+@bot.event
 async def on_ready():
-    print(f"Logged in as {client.user}")
+    print(f"[INFO] Bot conectado como {bot.user}")
 
-@client.event
+@bot.event
 async def on_message(message):
-    # Ignorar mensajes del propio bot
-    if message.author == client.user:
+    # Ignorar mensajes propios
+    if message.author == bot.user:
         return
 
-    # Solo reaccionar a mensajes del webhook específico
-    if message.webhook_id != WEBHOOK_ID:
-        return
+    # Comprobar si el mensaje viene de un webhook
+    if message.webhook_id:
+        if message.webhook_id == WEBHOOK_IDS["sugerencia"]:
+            # Crear hilo en el canal de mensaje
+            await message.channel.create_thread(
+                name="Sugerencia",
+                message=message
+            )
+            print("[INFO] Hilo de Sugerencia creado.")
+        
+        elif message.webhook_id == WEBHOOK_IDS["reporte"]:
+            await message.channel.create_thread(
+                name="Reporte",
+                message=message
+            )
+            print("[INFO] Hilo de Reporte creado.")
 
-    # Crear hilo siempre llamado "Sugerencia"
-    if message.channel.type == discord.ChannelType.text:
-        await message.channel.create_thread(
-            name="Sugerencia",
-            message=message
-        )
-        print("Hilo 'Sugerencia' creado.")
-
-client.run(TOKEN)
+# Iniciar bot usando token en environment
+bot.run(os.environ.get("DISCORD_TOKEN"))
