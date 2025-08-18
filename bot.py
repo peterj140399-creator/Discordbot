@@ -1,7 +1,9 @@
 import os
 import discord
+from dotenv import load_dotenv
 
-# Token desde variable de entorno
+# Cargar token del archivo .env
+load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 
 # Intents necesarios
@@ -11,7 +13,7 @@ intents.guilds = True
 
 client = discord.Client(intents=intents)
 
-# ID de tu webhook
+# ID del webhook que quieres filtrar
 WEBHOOK_ID = 1406962453987725392  # reemplaza con tu webhook real
 
 @client.event
@@ -24,17 +26,19 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    # Solo responder si el mensaje viene del webhook específico
+    # Solo responder si el mensaje viene del webhook
     if message.webhook_id == WEBHOOK_ID:
-        # Extraer nick de la primera línea del embed si existe
         nick = "desconocido"
-        if message.embeds:
-            embed = message.embeds[0]
-            if embed.description:
-                # Tomamos la primera línea de la descripción
-                lineas = embed.description.splitlines()
-                if lineas:
-                    nick = lineas[0].strip()
+        try:
+            # Tomar la descripción del embed
+            description = message.embeds[0].description
+            # Buscar línea que contenga "Nick en el servidor"
+            for line in description.splitlines():
+                if "Nick en el servidor" in line:
+                    nick = line.split(": ")[1].strip()
+                    break
+        except Exception as e:
+            print(f"No se pudo obtener el nick: {e}")
 
         thread_name = f"Sugerencia de {nick}"
         try:
