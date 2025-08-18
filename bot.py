@@ -2,12 +2,11 @@ import os
 import discord
 from dotenv import load_dotenv
 
-# Cargar variables de entorno
+# Cargar token del archivo .env
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
-WEBHOOK_ID = int(os.getenv("WEBHOOK_ID"))  # ID numérica del webhook
+WEBHOOK_ID = int(os.getenv("WEBHOOK_ID"))  # ID del webhook como número
 
-# Intents necesarios
 intents = discord.Intents.default()
 intents.messages = True
 intents.guilds = True
@@ -24,27 +23,29 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    # Solo responder a mensajes del webhook
-    if message.webhook_id != WEBHOOK_ID:
-        return
+    # Solo responder si el mensaje viene del webhook específico
+    if message.webhook_id == WEBHOOK_ID:
+        thread_name = None
 
-    # Determinar tipo de hilo según contenido del mensaje
-    content = message.content
-    if "¿Qué sugerencia tienes para nosotros?" in content:
-        thread_name = "Sugerencia"
-    elif "¿Sobre quién quieres hablarnos?" in content:
-        thread_name = "Reporte"
-    else:
-        thread_name = "General"
+        # Revisamos los embeds para determinar si es sugerencia o reporte
+        if message.embeds:
+            embed = message.embeds[0]
+            desc = embed.description.lower() if embed.description else ""
 
-    try:
-        await message.channel.create_thread(
-            name=thread_name,
-            message=message,
-            type=discord.ChannelType.public_thread
-        )
-        print(f"Hilo '{thread_name}' creado.")
-    except Exception as e:
-        print(f"Error creando hilo: {e}")
+            if "qué sugerencia tienes para nosotros" in desc:
+                thread_name = "Sugerencia"
+            elif "sobre quién quieres hablarnos" in desc:
+                thread_name = "Reporte"
+
+        if thread_name:
+            try:
+                await message.channel.create_thread(
+                    name=thread_name,
+                    message=message,
+                    type=discord.ChannelType.public_thread
+                )
+                print(f"Hilo '{thread_name}' creado.")
+            except Exception as e:
+                print(f"Error creando hilo: {e}")
 
 client.run(TOKEN)
