@@ -11,7 +11,7 @@ intents.guilds = True
 
 client = discord.Client(intents=intents)
 
-WEBHOOK_ID = 1406962453987725392  # reemplaza con tu webhook real
+WEBHOOK_ID = 1406962453987725392  # tu webhook
 
 @client.event
 async def on_ready():
@@ -23,8 +23,16 @@ async def on_message(message):
         return
 
     if message.webhook_id == WEBHOOK_ID:
-        # Aquí usamos message.username en lugar de message.author.name
-        thread_name = f"Sugerencia de {message.username}"  
+        # Extraer nombre desde el contenido del mensaje
+        lines = message.content.splitlines()
+        nombre = "desconocido"  # valor por defecto
+        for line in lines:
+            if line.lower().startswith("Nick en el servidor"):
+                nombre = line.split(":", 1)[1].strip()
+                break
+
+        thread_name = f"Sugerencia de {nombre}"
+
         try:
             await message.channel.create_thread(
                 name=thread_name,
@@ -36,3 +44,4 @@ async def on_message(message):
             print(f"Error creando hilo: {e}")
 
 client.run(TOKEN)
+
