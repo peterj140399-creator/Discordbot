@@ -27,7 +27,7 @@ async def on_message(message):
         lines = message.content.splitlines()
         nombre = "desconocido"  # valor por defecto
         for line in lines:
-            if line.lower().startswith("Nick en el servidor"):
+            if line.lower().startswith("nombre:"):
                 nombre = line.split(":", 1)[1].strip()
                 break
 
@@ -44,4 +44,5 @@ async def on_message(message):
             print(f"Error creando hilo: {e}")
 
 client.run(TOKEN)
+
 
