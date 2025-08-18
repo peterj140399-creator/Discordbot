@@ -2,52 +2,50 @@ import os
 import discord
 from dotenv import load_dotenv
 
+# Cargar token del archivo .env
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 
+# Intents necesarios para leer mensajes y crear threads
 intents = discord.Intents.default()
 intents.messages = True
 intents.guilds = True
 
 client = discord.Client(intents=intents)
 
-WEBHOOK_ID = 1406962453987725392  # reemplaza con tu webhook real
+# Nombre de tu webhook
+WEBHOOK_NAME = "Buzón"
 
 @client.event
 async def on_ready():
-    print(f'Bot listo. Conectado como: {client.user}')
+    print(f'Logged in as {client.user}')
 
 @client.event
 async def on_message(message):
-    print(f"Mensaje recibido: author={message.author}, webhook_id={message.webhook_id}, content={message.content}")
-
+    # Ignorar mensajes del propio bot
     if message.author == client.user:
-        print("Ignorando mensaje del bot")
         return
 
-    if message.webhook_id == WEBHOOK_ID:
-        # Imprimir contenido del mensaje para depurar
-        print(f"Mensaje válido del webhook: {message.content}")
+    # Solo responder si el mensaje viene del webhook con nombre "Buzón"
+    if message.author.name != WEBHOOK_NAME:
+        return
 
-        # Extraer nickname de la primera línea del mensaje
-        # Ajusta esto según el formato real de tu Google Form
-        try:
-            first_line = message.content.split("\n")[0]  # primera línea
-            nick = first_line.split(":")[1].strip()      # lo que sigue después de ":"
-        except Exception as e:
-            print(f"No se pudo extraer nick: {e}")
-            nick = "desconocido"
+    # Tomar la primera línea del mensaje como nick
+    nick = message.content.splitlines()[0].strip()
+    if not nick:
+        nick = "desconocido"
 
-        thread_name = f"Sugerencia de {nick}"
-        try:
-            await message.channel.create_thread(
-                name=thread_name,
-                message=message,
-                type=discord.ChannelType.public_thread
-            )
-            print(f"Hilo '{thread_name}' creado correctamente.")
-        except Exception as e:
-            print(f"Error creando hilo: {e}")
+    thread_name = f"Sugerencia de {nick}"
 
+    try:
+        await message.channel.create_thread(
+            name=thread_name,
+            message=message,
+            type=discord.ChannelType.public_thread  # público en el canal
+        )
+        print(f"Hilo '{thread_name}' creado.")
+    except Exception as e:
+        print(f"Error creando hilo: {e}")
+
+# Ejecutar el bot
 client.run(TOKEN)
-
