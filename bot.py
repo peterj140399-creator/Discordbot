@@ -13,8 +13,8 @@ intents.guilds = True
 
 client = discord.Client(intents=intents)
 
-# Nombre de tu webhook
-WEBHOOK_NAME = "Buzón"
+# ID de tu webhook
+WEBHOOK_ID = 1406962453987725392  # reemplaza con tu webhook real
 
 @client.event
 async def on_ready():
@@ -26,26 +26,21 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    # Solo responder si el mensaje viene del webhook con nombre "Buzón"
-    if message.author.name != WEBHOOK_NAME:
-        return
+    # Solo responder si el mensaje viene del webhook
+    if message.webhook_id == WEBHOOK_ID:
+        # Tomar la primera línea del mensaje como nick
+        nick = (message.content.splitlines()[0].strip() if message.content else "desconocido")
 
-    # Tomar la primera línea del mensaje como nick
-    nick = message.content.splitlines()[0].strip()
-    if not nick:
-        nick = "desconocido"
-
-    thread_name = f"Sugerencia de {nick}"
-
-    try:
-        await message.channel.create_thread(
-            name=thread_name,
-            message=message,
-            type=discord.ChannelType.public_thread  # público en el canal
-        )
-        print(f"Hilo '{thread_name}' creado.")
-    except Exception as e:
-        print(f"Error creando hilo: {e}")
+        thread_name = f"Sugerencia de {nick}"
+        try:
+            await message.channel.create_thread(
+                name=thread_name,
+                message=message,
+                type=discord.ChannelType.public_thread  # público en el canal
+            )
+            print(f"Hilo '{thread_name}' creado.")
+        except Exception as e:
+            print(f"Error creando hilo: {e}")
 
 # Ejecutar el bot
 client.run(TOKEN)
