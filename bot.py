@@ -13,7 +13,7 @@ intents.guilds = True
 
 client = discord.Client(intents=intents)
 
-# ID de tu webhook
+# ID del webhook del "Buzón"
 WEBHOOK_ID = 1406962453987725392  # reemplaza con tu webhook real
 
 @client.event
@@ -26,19 +26,34 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    # Solo responder si el mensaje viene del webhook
+    # Solo procesar mensajes del webhook específico
     if message.webhook_id == WEBHOOK_ID:
-        # Tomar la primera línea del mensaje como nick
-        nick = (message.content.splitlines()[0].strip() if message.content else "desconocido")
-
-        thread_name = f"Sugerencia de {nick}"
         try:
-            await message.channel.create_thread(
-                name=thread_name,
-                message=message,
-                type=discord.ChannelType.public_thread  # público en el canal
-            )
-            print(f"Hilo '{thread_name}' creado.")
+            # Extraer el nick desde el embed
+            if message.embeds:
+                embed = message.embeds[0]
+                # Cada línea del description es "Pregunta\nRespuesta"
+                lines = embed.description.splitlines()
+                nick = None
+                for i in range(len(lines)-1):
+                    question = lines[i].strip()
+                    answer = lines[i+1].strip()
+                    if question.lower() == "nick en el servidor":
+                        nick = answer
+                        break
+
+                if not nick:
+                    nick = "desconocido"
+
+                thread_name = f"Sugerencia de {nick}"
+
+                await message.channel.create_thread(
+                    name=thread_name,
+                    message=message,
+                    type=discord.ChannelType.public_thread
+                )
+                print(f"Hilo '{thread_name}' creado.")
+
         except Exception as e:
             print(f"Error creando hilo: {e}")
 
