@@ -1,51 +1,47 @@
 import os
 import discord
-from dotenv import load_dotenv
-
-# Cargar token del archivo .env
-load_dotenv()
-TOKEN = os.getenv("DISCORD_TOKEN")
-WEBHOOK_ID = int(os.getenv("WEBHOOK_ID"))  # ID del webhook como número
+from discord import Webhook, RequestsWebhookAdapter
 
 intents = discord.Intents.default()
 intents.messages = True
-intents.guilds = True
+
+TOKEN = os.environ.get("DISCORD_TOKEN")
+WEBHOOK_ID = int(os.environ.get("WEBHOOK_ID"))
+WEBHOOK_TOKEN = os.environ.get("WEBHOOK_TOKEN")
+GUILD_ID = int(os.environ.get("GUILD_ID"))
+CHANNEL_ID = int(os.environ.get("CHANNEL_ID"))
 
 client = discord.Client(intents=intents)
 
 @client.event
 async def on_ready():
-    print(f'Logged in as {client.user}')
+    print(f"Logged in as {client.user}")
 
 @client.event
 async def on_message(message):
-    # Ignorar mensajes del propio bot
+    # Ignorar mensajes del bot mismo
     if message.author == client.user:
         return
 
-    # Solo responder si el mensaje viene del webhook específico
-    if message.webhook_id == WEBHOOK_ID:
-        thread_name = None
+    # Solo reaccionar a mensajes del webhook específico
+    if message.webhook_id != WEBHOOK_ID:
+        return
 
-        # Revisamos los embeds para determinar si es sugerencia o reporte
-        if message.embeds:
-            embed = message.embeds[0]
-            desc = embed.description.lower() if embed.description else ""
+    # Determinar el tipo de hilo según el título del embed
+    thread_name = "Sugerencia"  # valor por defecto
+    if message.embeds:
+        embed_title = message.embeds[0].title.lower()
+        if "reporte" in embed_title:
+            thread_name = "Reporte"
+        elif "sugerencia" in embed_title:
+            thread_name = "Sugerencia"
 
-            if "qué sugerencia tienes para nosotros" in desc:
-                thread_name = "Sugerencia"
-            elif "sobre quién quieres hablarnos" in desc:
-                thread_name = "Reporte"
-
-        if thread_name:
-            try:
-                await message.channel.create_thread(
-                    name=thread_name,
-                    message=message,
-                    type=discord.ChannelType.public_thread
-                )
-                print(f"Hilo '{thread_name}' creado.")
-            except Exception as e:
-                print(f"Error creando hilo: {e}")
+    # Crear hilo en el canal donde se envió el mensaje
+    if message.channel.type == discord.ChannelType.text:
+        thread = await message.channel.create_thread(
+            name=thread_name,
+            message=message
+        )
+        print(f"Hilo '{thread_name}' creado.")
 
 client.run(TOKEN)
