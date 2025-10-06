@@ -39,15 +39,16 @@ def obtener_datos():
     data = sheet.get_all_records()
     if not data:
         return "No hay datos aún en la hoja."
+    
+    # Ordenar de mayor a menor participaciones
+    data.sort(key=lambda x: int(x.get("Participaciones", 0)), reverse=True)
+
     texto = "# :jack_o_lantern: Recuento de participaciones del sorteo :jack_o_lantern:\n\n"
     for fila in data:
-        nick = fila.get("Nick", "Desconocido").strip()
-        participaciones = fila.get("Participaciones", "0").strip()
-        try:
-            participaciones = int(participaciones)
-        except ValueError:
-            participaciones = 0
+        nick = fila.get("Nick", "Desconocido")
+        participaciones = fila.get("Participaciones", 0)
         texto += f"**{nick}** — {participaciones} :jack_o_lantern:\n"
+    
     return texto
 
 # ==== EVENTOS DEL BOT ====
@@ -106,6 +107,7 @@ async def actualizar_mensaje():
 
 # ==== EJECUCIÓN ====
 bot.run(os.environ.get("DISCORD_TOKEN"))
+
 
 
 
