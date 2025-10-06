@@ -29,7 +29,7 @@ creds = Credentials.from_service_account_info(
     scopes=["https://www.googleapis.com/auth/spreadsheets.readonly"]
 )
 gc = gspread.authorize(creds)
-sheet = gc.open_by_key(SPREADSHEET_ID).worksheet("Rankings")
+sheet = gc.open_by_key(SPREADSHEET_ID).sheet1
 
 message_id = None  # Guardará el ID del mensaje que el bot actualizará
 
@@ -102,6 +102,7 @@ async def actualizar_mensaje():
 
 # ==== EJECUCIÓN ====
 bot.run(os.environ.get("DISCORD_TOKEN"))
+
 
 
 
