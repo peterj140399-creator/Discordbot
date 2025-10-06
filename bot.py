@@ -39,7 +39,7 @@ def obtener_datos():
     data = sheet.get_all_records()
     if not data:
         return "No hay datos aún en la hoja."
-    texto = "📊 **Recuento de participaciones del sorteo**\n\n"
+    texto = "# Recuento de participaciones del sorteo\n\n"
     for fila in data:
         nick = fila.get("Nick", "Desconocido")
         participaciones = fila.get("Participaciones", 0)
@@ -103,3 +103,4 @@ async def actualizar_mensaje():
 
 # ==== EJECUCIÓN ====
 bot.run(os.environ.get("DISCORD_TOKEN"))
+
