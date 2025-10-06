@@ -41,8 +41,12 @@ def obtener_datos():
         return "No hay datos aún en la hoja."
     texto = "# :jack_o_lantern: Recuento de participaciones del sorteo :jack_o_lantern:\n\n"
     for fila in data:
-        nick = fila.get("Nick", "Desconocido")
-        participaciones = fila.get("Ranking", 0)
+        nick = fila.get("Nick", "Desconocido").strip()
+        participaciones = fila.get("Participaciones", "0").strip()
+        try:
+            participaciones = int(participaciones)
+        except ValueError:
+            participaciones = 0
         texto += f"**{nick}** — {participaciones} :jack_o_lantern:\n"
     return texto
 
@@ -102,6 +106,7 @@ async def actualizar_mensaje():
 
 # ==== EJECUCIÓN ====
 bot.run(os.environ.get("DISCORD_TOKEN"))
+
 
 
 
