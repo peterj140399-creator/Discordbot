@@ -76,9 +76,9 @@ async def on_message(message):
             print("[INFO] Hilo de Reporte creado.")
 
 # ==== TAREA AUTOMÁTICA ====
-@tasks.loop(minutes=5)
+@tasks.loop(seconds=10)
 async def actualizar_mensaje():
-    """Actualiza el mensaje del sorteo cada 5 minutos."""
+    """Actualiza el mensaje del sorteo cada 10 segundos."""
     global message_id
     canal = bot.get_channel(CHANNEL_ID)
     if canal is None:
@@ -103,4 +103,5 @@ async def actualizar_mensaje():
 
 # ==== EJECUCIÓN ====
 bot.run(os.environ.get("DISCORD_TOKEN"))
+
 
