@@ -29,7 +29,7 @@ creds = Credentials.from_service_account_info(
     scopes=["https://www.googleapis.com/auth/spreadsheets.readonly"]
 )
 gc = gspread.authorize(creds)
-sheet = gc.open_by_key(SPREADSHEET_ID).sheet1
+sheet = gc.open_by_key(SPREADSHEET_ID).worksheet("Rankings")
 
 message_id = None  # Guardará el ID del mensaje que el bot actualizará
 
@@ -39,12 +39,11 @@ def obtener_datos():
     data = sheet.get_all_records()
     if not data:
         return "No hay datos aún en la hoja."
-    texto = "# Recuento de participaciones del sorteo\n\n"
+    texto = "# :jack_o_lantern: Recuento de participaciones del sorteo :jack_o_lantern:\n\n"
     for fila in data:
         nick = fila.get("Nick", "Desconocido")
         participaciones = fila.get("Participaciones", 0)
-        texto += f"**{nick}** — {participaciones} participaciones\n"
-    texto += f"\n(Actualizado: {datetime.now().strftime('%d/%m/%Y %H:%M')})"
+        texto += f"**{nick}** — {participaciones} :jack_o_lantern:\n"
     return texto
 
 # ==== EVENTOS DEL BOT ====
@@ -103,5 +102,6 @@ async def actualizar_mensaje():
 
 # ==== EJECUCIÓN ====
 bot.run(os.environ.get("DISCORD_TOKEN"))
+
 
 
