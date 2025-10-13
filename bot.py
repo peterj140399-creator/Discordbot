@@ -82,7 +82,7 @@ async def on_message(message):
 # ==== TAREA AUTOMÁTICA ====
 @tasks.loop(seconds=10)
 async def actualizar_mensaje():
-    """Actualiza el mensaje del sorteo cada 60 segundos."""
+    """Actualiza el mensaje del sorteo cada 300 segundos."""
     global message_id
     canal = bot.get_channel(CHANNEL_ID)
     if canal is None:
@@ -107,6 +107,7 @@ async def actualizar_mensaje():
 
 # ==== EJECUCIÓN ====
 bot.run(os.environ.get("DISCORD_TOKEN"))
+
 
 
 
