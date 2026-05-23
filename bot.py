@@ -5,6 +5,7 @@ from discord.ext import commands
 # ==== CONFIGURACIÓN DISCORD ====
 intents = discord.Intents.default()
 intents.message_content = True
+intents.guild_messages = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
