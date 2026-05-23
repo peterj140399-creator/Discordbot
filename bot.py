@@ -16,11 +16,12 @@ WEBHOOK_IDS = {
 
 # ==== EVENTOS ====
 @bot.event
-async def on_ready():
-    print(f"[INFO] Bot conectado como {bot.user}")
-
-@bot.event
 async def on_message(message):
+
+    print("MENSAJE DETECTADO")
+    print(f"Webhook ID: {message.webhook_id}")
+    print(f"Contenido: {message.content}")
+
     # Ignorar mensajes del propio bot
     if message.author == bot.user:
         return
